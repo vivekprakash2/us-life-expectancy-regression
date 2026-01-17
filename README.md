@@ -45,8 +45,6 @@ This analysis integrates three major public health datasets:
 
 **Source:** University of Wisconsin Population Health Institute  
 
-**Final Dataset**: [Google Drive Folder](https://drive.google.com/drive/u/0/folders/1Ef_fobxlxXsZmH_xIX9iGtMt1YsMgYg_) 
-
 ---
 
 ## Data Processing
@@ -59,6 +57,8 @@ Key preprocessing steps included:
 - Merging datasets by **state + county** to avoid naming conflicts  
 
 The final merged dataset contains **~3,000 counties and 91 variables**.
+
+**Final Dataset**: [Google Drive Folder](https://drive.google.com/drive/u/0/folders/1Ef_fobxlxXsZmH_xIX9iGtMt1YsMgYg_) 
 
 ---
 
