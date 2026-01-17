@@ -1,0 +1,484 @@
+---
+title: "regression_analysis"
+author: "Amit Badoni, Kriti Agrawal, Vivek Prakash, Vaishnavi Vuyyuru"
+date: "2025-11-26"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+install.packages(c("readxl", "dplyr", "ggplot2", "car", "MASS", "janitor"))
+
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(car)
+library(MASS)
+library(janitor)
+library(car)
+```
+
+
+```{r}
+file_path = "final_dataset.xlsx"
+
+df <- read_excel(file_path) %>%
+  rename(LifeExpectancy = `Life Expectancy`)
+
+# Converting string income values to numeric income values
+income_cols <- grep("^Household Income", names(df), value = TRUE)
+
+df[income_cols] <- lapply(df[income_cols], function(x) {
+  as.numeric(gsub(",", "", x))
+})
+  
+
+head(df)
+```
+
+```{r}
+df = clean_names(df)
+head(df)
+```
+
+
+```{r}
+# Cleaning up column names to make them more usable
+df <- df %>% clean_names() %>%
+  rename(
+    fips = fips_cdc,
+    state_abbr = state_abbr,
+    state = state,
+    county = county,
+    
+    teeth_loss = all_teeth_lost_among_adults_aged_65_years,
+    arthritis = arthritis_among_adults_aged_18_years,
+    binge_drink = binge_drinking_among_adults_aged_18_years,
+    cancer = cancer_excluding_skin_cancer_among_adults_aged_18_years,
+    cervical_screen = cervical_cancer_screening_among_adult_women_aged_21_65_years,
+    cholesterol_screen = cholesterol_screening_among_adults_aged_18_years,
+    ckd = chronic_kidney_disease_among_adults_aged_18_years,
+    copd = chronic_obstructive_pulmonary_disease_among_adults_aged_18_years,
+    chd = coronary_heart_disease_among_adults_aged_18_years,
+    asthma = current_asthma_among_adults_aged_18_years,
+    uninsured_18_64 = current_lack_of_health_insurance_among_adults_aged_18_64_years,
+    smoking = current_smoking_among_adults_aged_18_years,
+    diabetes = diagnosed_diabetes_among_adults_aged_18_years,
+    colorectal_screen = fecal_occult_blood_test_sigmoidoscopy_or_colonoscopy_among_adults_aged_50_75_years,
+    high_bp = high_blood_pressure_among_adults_aged_18_years,
+    high_chol = high_cholesterol_among_adults_aged_18_years_who_have_been_screened_in_the_past_5_years,
+    mammography = mammography_use_among_women_aged_50_74_years,
+    mental_notgood_14d = mental_health_not_good_for_14_days_among_adults_aged_18_years,
+    no_physical_activity = no_leisure_time_physical_activity_among_adults_aged_18_years,
+    obesity = obesity_among_adults_aged_18_years,
+    
+    older_men_preventive =
+      older_adult_men_aged_65_years_who_are_up_to_date_on_a_core_set_of_clinical_preventive_services_flu_shot_past_year_ppv_shot_ever_colorectal_cancer_screening,
+    
+    older_women_preventive =
+      older_adult_women_aged_65_years_who_are_up_to_date_on_a_core_set_of_clinical_preventive_services_flu_shot_past_year_ppv_shot_ever_colorectal_cancer_screening_and_mammogram_past_2_years,
+    
+    physical_notgood_14d = physical_health_not_good_for_14_days_among_adults_aged_18_years,
+    short_sleep = sleeping_less_than_7_hours_among_adults_aged_18_years,
+    stroke = stroke_among_adults_aged_18_years,
+    
+    bp_meds = taking_medicine_for_high_blood_pressure_control_among_adults_aged_18_years_with_high_blood_pressure,
+    
+    dentist_visit = visits_to_dentist_or_dental_clinic_among_adults_aged_18_years,
+    doctor_visit = visits_to_doctor_for_routine_checkup_within_the_past_year_among_adults_aged_18_years,
+    
+    e_totpop = e_totpop,
+    e_daypop = e_daypop,
+    e_minrty = e_minrty,
+    e_pov200 = e_pov200,
+    e_nohsdp = e_nohsdp,
+    e_unemp = e_unemp,
+    e_renter = e_renter,
+    e_houbdn = e_houbdn,
+    e_uninsur = e_uninsur,
+    e_noint = e_noint,
+    e_disabl = e_disabl,
+    e_mobile = e_mobile,
+    e_groupq = e_groupq,
+    e_ozone = e_ozone,
+    e_pm = e_pm,
+    e_dslpm = e_dslpm,
+    e_totcr = e_totcr,
+    e_npl = e_npl,
+    e_tri = e_tri,
+    e_tsd = e_tsd,
+    e_rmp = e_rmp,
+    e_coal = e_coal,
+    e_lead = e_lead,
+    e_park = e_park,
+    e_houage = e_houage,
+    e_wlkind = e_wlkind,
+    e_road = e_road,
+    e_airprt = e_airprt,
+    e_impwtr = e_impwtr,
+    e_nehd = e_nehd,
+    e_smoke = e_smoke,
+    e_cfbd = e_cfld,
+    e_drgt = e_drgt,
+    e_hrcn = e_hrcn,
+    e_rfld = e_rfld,
+    e_swnd = e_swnd,
+    
+    life_expectancy = life_expectancy,
+    
+    pct_female = percent_female,
+    pct_ai_an = percent_american_indian_or_alaska_native,
+    pct_asian = percent_asian,
+    pct_hispanic = percent_hispanic,
+    pct_pacific = percent_native_hawaiian_or_other_pacific_islander,
+    pct_black = percent_non_hispanic_black,
+    pct_white = percent_non_hispanic_white,
+    population = population,
+    pct_vaccinated = percent_vaccinated,
+    pct_uninsured_adults = percent_uninsured_adults,
+    pct_some_college = percent_some_college,
+    pct_completed_hs = percent_completed_high_school,
+    pct_unemployed = percent_unemployed,
+    pct_food_insecure = percent_food_insecure,
+    hs_grad_rate = high_school_graduation_rate,
+    avg_grade_perf = average_grade_performance,
+    
+    income_aian = household_income_aian,
+    income_asian = household_income_asian,
+    income_black = household_income_black,
+    income_hispanic = household_income_hispanic,
+    income_white = household_income_white,
+    income_pacific = household_income_pacific_islander
+  )
+```
+
+```{r}
+head(df)
+```
+
+
+## Simple Regression
+
+```{r}
+# Selected 9 variables out of 87 numeric features from different categories such as income, health, education, etc.
+predictors <- c(
+  "smoking",
+  "income_white",
+  "cancer",
+  "pct_some_college",
+  "obesity",
+  "diabetes",
+  "pct_food_insecure",
+  "e_pm",
+  "pct_black"
+)
+
+for (p in predictors) {
+  formula <- as.formula(paste("life_expectancy ~", p))
+  cat("-------------------------------------------------\n")
+  cat("Model for:", p, "\n")
+  print(summary(lm(formula, data = df)))
+}
+
+```
+
+## Multiple Linear Regression
+
+### Full model
+
+```{r}
+# Retrieving all numeric features
+df_num <- df %>% select_if(is.numeric)
+test = df_num[4,]
+df_num = df_num[-4,]
+
+model_full <- lm(life_expectancy ~ ., data = df_num)
+
+summary(model_full)
+```
+
+
+```{r}
+# VIF, or Variance Inflation Factor, statistics measure how much the variance of a regression coefficient is inflated due to multicollinearity (correlation between independent variables). High VIF value => high collinearity
+vif(model_full)
+```
+
+
+### Feature selection using Stepwise Regression
+
+```{r, include=FALSE}
+# Stepwise regression starts with a null model and keeps adding features based on significance (p-values)
+model_null <- lm(life_expectancy ~ 1, data = df_num)
+
+step_model <- step(model_null, scope = list(lower = model_null, upper = model_full), direction = "both")
+```
+
+```{r}
+summary(step_model)
+```
+
+
+### Reduced model
+
+```{r}
+# Using 57 features from stepwise regression, the feature count was iteratively reduced based on significance (p-values) and VIF statistics to 38 features.
+model_reduced <- lm(
+  life_expectancy ~ population + pct_food_insecure + 
+    smoking + pct_ai_an + e_drgt + pct_female + obesity + 
+    e_totcr + cervical_screen + e_houage + e_smoke + pct_vaccinated + 
+    e_road + pct_asian + hs_grad_rate + e_uninsur + older_men_preventive + 
+    e_coal + pct_some_college + e_noint + e_mobile + 
+    e_swnd + income_hispanic + avg_grade_perf + e_houbdn + 
+    e_renter + e_groupq + pct_black + doctor_visit + e_unemp + 
+    e_park + colorectal_screen + 
+    e_cfbd + e_rfld + e_tsd + e_tri + pct_unemployed, data = df_num
+)
+
+summary(model_reduced)
+```
+
+```{r}
+vif(model_reduced)
+```
+
+## Model comparison
+
+```{r}
+anova(model_reduced, model_full)
+```
+
+
+## Interaction terms
+
+```{r}
+# Center (not scale) variables used in interactions
+df_num$smoking_c           <- scale(df_num$smoking, center = TRUE, scale = FALSE)
+df_num$obesity_c           <- scale(df_num$obesity, center = TRUE, scale = FALSE)
+df_num$pct_food_insecure_c <- scale(df_num$pct_food_insecure, center = TRUE, scale = FALSE)
+df_num$pct_some_college_c  <- scale(df_num$pct_some_college, center = TRUE, scale = FALSE)
+df_num$pct_black_c         <- scale(df_num$pct_black, center = TRUE, scale = FALSE)
+df_num$e_ozone_c           <- scale(df_num$e_ozone, center = TRUE, scale = FALSE)
+df_num$doctor_visit_c      <- scale(df_num$doctor_visit, center = TRUE, scale = FALSE)
+df_num$pct_female_c        <- scale(df_num$pct_female, center = TRUE, scale = FALSE)
+
+
+```
+
+### Interaction between smoking and obesity
+
+```{r}
+# Using smoking-obesity interaction term with the other features (excluding the individual smoking and obesity features)
+model_int1 <- lm(
+  life_expectancy ~ population + pct_food_insecure +
+    smoking_c * obesity_c +
+    pct_ai_an + e_drgt + pct_female + 
+    e_totcr + cervical_screen + e_houage + e_smoke + pct_vaccinated +
+    e_road + pct_asian + hs_grad_rate + e_uninsur + older_men_preventive +
+    e_coal + pct_some_college + e_noint + e_mobile + e_swnd +
+    income_hispanic + avg_grade_perf + e_houbdn + e_renter + e_groupq +
+    pct_black + doctor_visit + e_unemp + e_npl + e_park +
+    colorectal_screen + e_cfbd + e_rfld + e_tsd + e_tri + pct_unemployed,
+  data = df_num
+)
+
+summary(model_int1)
+
+```
+
+```{r}
+anova(model_reduced, model_int1)
+```
+
+```{r}
+# We're using weighted GVIF to analyze the collinearity of our interaction terms with the other features. The interaction terms have a degree of freedom equal to 3 because the model matrix expands in a way that makes the variables smoking_c, obesity_c, and smoking_c:obesity_c functionally linked into a 3-parameter block.
+vif(model_int1, type = 'predictor')
+```
+
+### Interaction between food insecurity and education
+
+```{r}
+model_int2 <- lm(
+  life_expectancy ~ population + pct_food_insecure * pct_some_college + 
+    smoking + pct_ai_an + e_drgt + pct_female + obesity + 
+    e_totcr + cervical_screen + e_houage + e_smoke + pct_vaccinated + 
+    e_road + pct_asian + hs_grad_rate + e_uninsur + older_men_preventive + 
+    e_coal + e_noint + e_mobile + 
+    e_swnd + income_hispanic + avg_grade_perf + e_houbdn + 
+    e_renter + e_groupq + pct_black + doctor_visit + e_unemp + 
+    e_park + colorectal_screen + 
+    e_cfbd + e_rfld + e_tsd + e_tri + pct_unemployed, data = df_num
+)
+
+summary(model_int2)
+
+```
+
+```{r}
+anova(model_reduced, model_int2)
+```
+
+```{r}
+vif(model_int2, type = "predictor")
+```
+
+### Interaction between % Female and % Doctor Visit
+
+```{r}
+model_int3 <- lm(
+  life_expectancy ~ population + pct_food_insecure + pct_some_college + 
+    smoking + pct_ai_an + e_drgt + obesity + 
+    e_totcr + cervical_screen + e_houage + e_smoke + pct_vaccinated + 
+    e_road + pct_asian + hs_grad_rate + e_uninsur + older_men_preventive + 
+    e_coal + e_noint + e_mobile + e_swnd + income_hispanic + avg_grade_perf + e_houbdn + 
+    e_renter + e_groupq + pct_black + doctor_visit * pct_female + e_unemp + 
+    e_park + colorectal_screen + e_cfbd + e_rfld + e_tsd + e_tri + pct_unemployed, data = df_num
+)
+
+summary(model_int3)
+```
+
+```{r}
+anova(model_reduced, model_int3)
+```
+
+```{r}
+vif(model_int3, type = "predictor")
+```
+
+### Interaction between % Black and % Some College Education
+
+```{r}
+model_int4 <- lm(
+  life_expectancy ~ population + pct_food_insecure + pct_some_college * pct_black + 
+    smoking + pct_ai_an + e_drgt + obesity + 
+    e_totcr + cervical_screen + e_houage + e_smoke + pct_vaccinated + 
+    e_road + hs_grad_rate + e_uninsur + older_men_preventive + 
+    e_coal + e_noint + e_mobile + e_swnd + income_hispanic + avg_grade_perf + e_houbdn + 
+    e_renter + e_groupq + pct_asian + doctor_visit + pct_female + e_unemp + 
+    e_park + colorectal_screen + e_cfbd + e_rfld + e_tsd + e_tri + pct_unemployed, data = df_num
+)
+
+summary(model_int4)
+```
+
+```{r}
+anova(model_reduced, model_int4)
+```
+
+
+```{r}
+vif(model_int4, type = "predictor")
+```
+
+
+### Final reduced model with relevant interaction terms
+
+```{r}
+model_reduced_int <- lm(
+  life_expectancy ~ population + pct_food_insecure * pct_some_college + 
+    smoking * obesity + pct_ai_an + e_drgt + pct_female + 
+    e_totcr + cervical_screen + e_houage + e_smoke + pct_vaccinated + 
+    e_road + pct_asian + hs_grad_rate + e_uninsur + older_men_preventive + 
+    e_coal + e_noint + e_mobile + 
+    e_swnd + income_hispanic + avg_grade_perf + e_houbdn + 
+    e_renter + e_groupq + pct_black + doctor_visit + e_unemp + 
+    e_park + colorectal_screen + 
+    e_cfbd + e_rfld + e_tsd + e_tri + pct_unemployed, data = df_num
+)
+
+summary(model_reduced_int)
+```
+
+```{r}
+anova(model_reduced, model_reduced_int)
+```
+
+```{r}
+vif(model_reduced_int, type = 'predictor')
+```
+
+## Diagnostics
+
+```{r}
+plot(fitted(model_reduced), residuals(model_reduced),
+     xlab = "Fitted values", ylab = "Residuals",
+     main = "Residuals vs Fitted")
+abline(h = 0, col = "red")
+
+
+## normal Q-Q plot
+qqnorm(residuals(model_reduced))
+qqline(residuals(model_reduced), col = "red")
+
+## scale-location (sqrt |residuals| vs fitted)
+plot(fitted(model_reduced), sqrt(abs(residuals(model_reduced))),
+     xlab = "Fitted values", ylab = "sqrt(|Residuals|)",
+     main = "Scale-Location")
+
+## residuals vs each key predictor (selected based on p-value)
+par(mfrow = c(2, 3))
+plot(df_num$population, residuals(model_reduced),
+     xlab = "% Uninsured Adults", ylab = "Residuals")
+abline(h = 0, col = "red")
+
+plot(df_num$pct_food_insecure, residuals(model_reduced),
+     xlab = "% Completed High School", ylab = "Residuals")
+abline(h = 0, col = "red")
+
+plot(df_num$smoking, residuals(model_reduced),
+     xlab = "% Food Insecure", ylab = "Residuals")
+abline(h = 0, col = "red")
+
+plot(df_num$pct_ai_an, residuals(model_reduced),
+     xlab = "% Unemployed", ylab = "Residuals")
+abline(h = 0, col = "red")
+
+plot(df_num$e_drgt, residuals(model_reduced),
+     xlab = "E_PM (pollution)", ylab = "Residuals")
+abline(h = 0, col = "red")
+
+plot(df_num$pct_black, residuals(model_reduced),
+     xlab = "E_SMOKE", ylab = "Residuals")
+abline(h = 0, col = "red")
+
+```
+
+## Leverage Points and Cook's Distance
+
+```{r}
+## LEVERAGE & INFLUENTIAL POINTS
+par(mfrow = c(1, 2))
+
+## leverage (hat values)
+lev <- hatvalues(model_reduced)
+plot(lev, ylab = "Leverage", main = "Leverage values")
+abline(h = 2 * length(coef(model_reduced)) / nrow(df_num), col = "red", lty = 2)
+
+## cook's distance
+cook <- cooks.distance(model_reduced)
+plot(cook, ylab = "Cook's distance", main = "Cook's distance")
+abline(h = 4 / (nrow(df_num) - length(coef(model_reduced))), col = "red", lty = 2)
+
+## identify the most influential county (index)
+which.max(cook)
+cook[which.max(cook)]
+```
+
+## Prediction
+
+```{r}
+## PREDICTION
+## 95% confidence interval for mean life expectancy
+predict(model_reduced, newdata = test, interval = "confidence")
+
+## 95% prediction interval for an individual county
+predict(model_reduced, newdata = test, interval = "prediction")
+
+
+```
+
