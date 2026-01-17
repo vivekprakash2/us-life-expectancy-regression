@@ -167,6 +167,7 @@ This highlights the difference between **population-level certainty** and **indi
 ---
 
 ## Technologies Used
+- Python (pandas)
 - R (for diagnostics and modeling)  
 - Excel (data cleaning)  
 - Public health and census datasets  
