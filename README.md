@@ -58,7 +58,7 @@ Key preprocessing steps included:
 
 The final merged dataset contains **~3,000 counties and 91 variables**.
 
-**Final Dataset**: [Google Drive Folder](https://drive.google.com/drive/u/0/folders/1Ef_fobxlxXsZmH_xIX9iGtMt1YsMgYg_) 
+**Final Dataset:** [Google Drive Folder](https://drive.google.com/drive/u/0/folders/1Ef_fobxlxXsZmH_xIX9iGtMt1YsMgYg_) 
 
 ---
 
